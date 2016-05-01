@@ -1,5 +1,24 @@
-div.hsh_container {
-    float: left;
-    vertical-align: middle;
+#hsh_sidebar {
+    margin: 10px 0 25px 0;
+    display: table;
+}
+
+#hsh_sidebar h5 {
+    padding: 0;
+    margin: 10px 0;
+}
+
+#hsh_sidebar a {
+    color: inherit;
+    font-size: 0.8em;
+    display: table;
+    margin-bottom: 5px;
+    text-decoration: none;
+}
+
+#hsh_sidebar img {
+    color: inherit;
+    vertical-align: bottom;
+    width: 20px;
     margin-right: 5px;
 }

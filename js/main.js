@@ -10,33 +10,74 @@ var HSH = {
         self.img_fav = 'https://hacked-emails.com/images/ch-extension-fav.png'
         self.img_hackfound = 'https://hacked-emails.com/images/ch-extension-hackfound.png'
         self.img_hacknotfound = 'https://hacked-emails.com/images/ch-extension-hacknotfound.png'
+        self.gmailSidebar = null;
+        self.hshSidebar = null;
         self.cache = {};
     },
-    callApi: function (email_address, obj) { //call to hacked-emails.com api
+    init_sidebar: function () {
+        var self = this;
+        //Check sidebar every thread iteraction
+        self.gmailSidebar = localJQuery('div[role="complementary"].nH');
+
+        if (localJQuery('#hsh_sidebar', self.gmailSidebar).length == 0)
+            localJQuery('<div id="hsh_sidebar"><h5>Hacked Emails security check</h5></div>').appendTo(self.gmailSidebar);
+
+        self.hshSidebar = localJQuery('#hsh_sidebar', self.gmailSidebar);
+    },
+    callApi: function (email_address, obj, resposeToDom) { //call to hacked-emails.com api
+        resposeToDom = typeof resposeToDom !== 'undefined' ? resposeToDom : "email_view";
         var self = this;
 
-        localJQuery.getJSON(self.apiUrl, {q: email_address})
-            .done(function (json) {
+        localJQuery.ajax({
+            url: self.apiUrl,
+            dataType: 'json',
+            async: true,
+            data: {q: email_address},
+            success: function (json) {
                 if (typeof json == 'object') {
                     self.cache[email_address] = json; //Results cache
-                    self.addResponseToWebpage(json, obj);
+                    if (resposeToDom == "email_view")
+                        self.addResponseToEmailView(json, obj);
+                    else
+                        self.addResponseToSidebar(json, obj);
                 }
+            }
+        });
 
-            })
-            .fail(function (jqxhr, textStatus, error) {
-                //console.log(json);
-            });
 
     },
+    query_thread: function (thread_obj) {
+        var self = this;
+        var unique_emails = {};
+        self.init_sidebar();
+        // console.log(self.gmailSidebar);
+        // console.log(self.hshSidebar);
+        // console.log(thread_obj);
+
+        localJQuery.each(thread_obj.people_involved, function (key, value) { // Take users from involved
+            unique_emails[value[1]] = value[0];
+        });
+        localJQuery.each(thread_obj.threads, function (key, value) { // Then complete with from vlaue
+            unique_emails[value.from_email] = (value.from.length > 0 ) ? value.from : value.from_email;
+        });
+        //console.log(unique_emails);
+        localJQuery.each(unique_emails, function (key, value) {
+            if (value.length == 0) //Name not present? Take the email!
+                value = key;
+            self.callApi(key, value, "sidebar");
+        });
+
+    },
+
     query: function (email_address, obj) { //call to gmail to get headers
         var self = this;
         if (typeof  self.cache[email_address] !== "object") {
             self.callApi(email_address, obj);
         } else {
-            self.addResponseToWebpage(self.cache[email_address], obj);
+            self.addResponseToEmailView(self.cache[email_address], obj);
         }
     },
-    addResponseToWebpage: function (json, domObject) { //print response
+    addResponseToEmailView: function (json, domObject) { //print response
         var self = this;
 
         if (json.status == "found") {
@@ -61,6 +102,33 @@ var HSH = {
             .css('margin', '2px 10px 0px -10px');
 
         localJQuery(".gE", domObject).prepend(localJQuery(anchorElement).wrapInner(imgElement));
+    },
+    addResponseToSidebar: function (json, name) { //print response
+        var self = this;
+
+        if (json.status == "found") {
+            displayText = "Email hacked: found " + json.results + " results";
+            displayImg = self.img_hackfound;
+            //   localJQuery(".aju img", domObject).css("border", "2px solid red");
+        } else {
+            displayText = "Email safe";
+            displayImg = self.img_hacknotfound;
+            // localJQuery(".aju img", domObject).css("border", "2px solid lime");
+        }
+        var imgElement = localJQuery('<img>')
+            .attr('src', displayImg)
+            .attr('width', 26)
+            .attr('title', displayText);
+
+        var anchorElement = localJQuery('<a></a>')
+            .attr('href', 'https://hacked-emails.com/check_email?q=' + json.query)
+            .attr('target', '_blank')
+            .attr('title', displayText);
+
+        var textElement = name;
+
+
+        localJQuery(self.hshSidebar).append(localJQuery(anchorElement).wrapInner(imgElement).append(textElement));
     }
 }
 var gmail_hsh;
@@ -76,10 +144,19 @@ function onDocReady(f) {
 var main = function () {
     HSH.init();
     gmail_hsh = new Gmail();
-    console.log('Hacked Emails checker for GMail. Hello ', gmail_hsh.get.user_email())
+    console.log('Hacked Emails checker for GMail. Hello ', gmail_hsh.get.user_email());
 
+    gmail_hsh.observe.after("open_email", function (id, url, body, xhr) {
+        var currentEmail, emails;
+
+        emails = gmail_hsh.get.email_data(id);
+        HSH.query_thread(emails);
+
+
+    });
     gmail_hsh.observe.on('view_thread', function (obj) {
-        //console.log('view_thread', obj);
+       // console.log('view_thread', obj);
+
     });
     // now we have access to the sub observers view_email and load_email_menu
     gmail_hsh.observe.on('view_email', function (obj) {
