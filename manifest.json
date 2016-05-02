@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Hacked Emails checker for GMail",
-  "version": "1.5",
+  "version": "1.5.2",
   "description": "Hacked-Emails.com checker for GMail. Anonymously check if an email sender has ever been compromised in a security breach",
   "content_scripts": [
     {

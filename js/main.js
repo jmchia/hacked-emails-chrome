@@ -20,7 +20,7 @@ var HSH = {
         self.gmailSidebar = localJQuery('div[role="complementary"].nH');
 
         if (localJQuery('#hsh_sidebar', self.gmailSidebar).length == 0)
-            localJQuery('<div id="hsh_sidebar"><h5>Hacked Emails security check</h5></div>').appendTo(self.gmailSidebar);
+            localJQuery('<div id="hsh_sidebar"><h5>Hacked Emails security check</h5></div>').prependTo(self.gmailSidebar);
 
         self.hshSidebar = localJQuery('#hsh_sidebar', self.gmailSidebar);
     },
