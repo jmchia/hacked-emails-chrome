@@ -7,9 +7,8 @@ var HSH = {
         var self = this;
         self.identifier = "HSH";
         self.apiUrl = "https://hacked-emails.com/api_results";
-        self.img_fav = 'https://hacked-emails.com/images/ch-extension-fav.png'
-        self.img_hackfound = 'https://hacked-emails.com/images/ch-extension-hackfound.png'
-        self.img_hacknotfound = 'https://hacked-emails.com/images/ch-extension-hacknotfound.png'
+        self.img_hackfound = hsh_extension_url+'images/leakfound.png';
+        self.img_hacknotfound = hsh_extension_url+'images/leaknotfound.png';
         self.gmailSidebar = null;
         self.hshSidebar = null;
         self.cache = {};
@@ -17,7 +16,7 @@ var HSH = {
     init_sidebar: function () {
         var self = this;
         //Check sidebar every thread iteraction
-        self.gmailSidebar = localJQuery('div[role="complementary"].nH');
+        self.gmailSidebar = localJQuery('div[role="complementary"].nH').parent();
 
         if (localJQuery('#hsh_sidebar', self.gmailSidebar).length == 0)
             localJQuery('<div id="hsh_sidebar"><h5>Hacked Emails security check</h5></div>').prependTo(self.gmailSidebar);
@@ -50,17 +49,15 @@ var HSH = {
         var self = this;
         var unique_emails = {};
         self.init_sidebar();
-        // console.log(self.gmailSidebar);
-        // console.log(self.hshSidebar);
-        // console.log(thread_obj);
 
         localJQuery.each(thread_obj.people_involved, function (key, value) { // Take users from involved
             unique_emails[value[1]] = value[0];
         });
+
         localJQuery.each(thread_obj.threads, function (key, value) { // Then complete with from vlaue
             unique_emails[value.from_email] = (value.from.length > 0 ) ? value.from : value.from_email;
         });
-        //console.log(unique_emails);
+
         localJQuery.each(unique_emails, function (key, value) {
             if (value.length == 0) //Name not present? Take the email!
                 value = key;
@@ -83,12 +80,11 @@ var HSH = {
         if (json.status == "found") {
             displayText = "Email hacked: found " + json.results + " results";
             displayImg = self.img_hackfound;
-            //   localJQuery(".aju img", domObject).css("border", "2px solid red");
         } else {
             displayText = "Email safe";
             displayImg = self.img_hacknotfound;
-            // localJQuery(".aju img", domObject).css("border", "2px solid lime");
         }
+
         var imgElement = localJQuery('<img>')
             .attr('src', displayImg)
             .attr('width', 26)
@@ -98,8 +94,7 @@ var HSH = {
             .attr('href', 'https://hacked-emails.com/check_email?q=' + json.query)
             .attr('target', '_blank')
             .attr('title', displayText)
-            .css('float', 'left')
-            .css('margin', '2px 10px 0px -10px');
+            .attr('class', 'email_view_hsh_anchor');
 
         localJQuery(".gE", domObject).prepend(localJQuery(anchorElement).wrapInner(imgElement));
     },
@@ -109,12 +104,11 @@ var HSH = {
         if (json.status == "found") {
             displayText = "Email hacked: found " + json.results + " results";
             displayImg = self.img_hackfound;
-            //   localJQuery(".aju img", domObject).css("border", "2px solid red");
         } else {
             displayText = "Email safe";
             displayImg = self.img_hacknotfound;
-            // localJQuery(".aju img", domObject).css("border", "2px solid lime");
         }
+
         var imgElement = localJQuery('<img>')
             .attr('src', displayImg)
             .attr('width', 26)
@@ -126,7 +120,6 @@ var HSH = {
             .attr('title', displayText);
 
         var textElement = name;
-
 
         localJQuery(self.hshSidebar).append(localJQuery(anchorElement).wrapInner(imgElement).append(textElement));
     }
@@ -148,21 +141,17 @@ var main = function () {
 
     gmail_hsh.observe.after("open_email", function (id, url, body, xhr) {
         var currentEmail, emails;
-
         emails = gmail_hsh.get.email_data(id);
         HSH.query_thread(emails);
-
-
     });
+
     gmail_hsh.observe.on('view_thread', function (obj) {
        // console.log('view_thread', obj);
-
     });
+
     // now we have access to the sub observers view_email and load_email_menu
     gmail_hsh.observe.on('view_email', function (obj) {
-        //console.log('view_email', obj);
         var from = obj.from();
-        //console.log('Email is from', from.email); // {email: 'user@user.com', name: 'Display Name'}
         HSH.query(from.email, obj.dom());
     });
 }

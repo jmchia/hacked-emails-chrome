@@ -1,6 +1,7 @@
 #hsh_sidebar {
     margin: 10px 0 25px 0;
     display: table;
+    width: 200px;
 }
 
 #hsh_sidebar h5 {
@@ -21,4 +22,9 @@
     vertical-align: bottom;
     width: 20px;
     margin-right: 5px;
+}
+
+.email_view_hsh_anchor {
+     margin:2px 10px 0px 0px;
+    float: left;
 }

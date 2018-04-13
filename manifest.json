@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Hacked Emails checker for GMail",
-  "version": "1.5.2",
-  "description": "Hacked-Emails.com checker for GMail. Anonymously check if an email sender has ever been compromised in a security breach",
+  "name": "Hacked Emails webmail checker",
+  "version": "1.6.1",
+  "description": "Hacked-Emails.com checker for webmail providers. Anonymously check if an email sender has ever been compromised in a security breach",
   "content_scripts": [
     {
       "matches": [
@@ -17,7 +17,9 @@
     "/js/lib/jquery.js",
     "/js/lib/gmail.js",
     "/js/main.js",
-    "/css/styles.css"
+    "/css/styles.css",
+    "/images/leakfound.png",
+    "/images/leaknotfound.png"
   ],
   "icons": {
     "16": "/icons/icon16.png",
